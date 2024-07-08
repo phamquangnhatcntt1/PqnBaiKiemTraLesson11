@@ -3,78 +3,93 @@ import PqnSinhVienList from "./component/PqnSinhVienList";
 import axios from "./Api/pqnApi.js";
 import { useEffect, useState } from "react";
 import PqnSinhVienAddOrEdit from "./component/PqnSinhVienAddOrEdit";
-function PqnApp() {
-  const [pqnSinhVienList, setPqnSinhVienList] = useState([]);
 
-  // đọc dữ liệu từ api
-  const pqnGetAllSinhViens = async () => {
-    const pqnResponse = await axios.get("pqnSinhViens");
-    console.log("Api Data:", pqnResponse.data);
-    setPqnSinhVienList(pqnResponse.data);
+const PqnApp = () => {
+  const [PqnListSinhVien, setPqnListSinhVien] = useState([]);
+  const [PqnSinhVienToEdit, setPqnSinhVienToEdit] = useState(null);
+  const PqnHandleEdit = (sinhvien) => {
+    setPqnSinhVienToEdit(sinhvien);
+    setPqnAddOrEdit(true); // Open the form for editing
   };
+  // doc du lieu tu api
+  const PqnGetAllSinhVien = async () => {
+    try {
+      const PqnResponse = await axios.get("PqnSinhVien");
+      console.log("API Data:", PqnResponse.data);
+      setPqnListSinhVien(PqnResponse.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }
 
   useEffect(() => {
-    pqnGetAllSinhViens();
-    console.log("State Data:", pqnSinhVienList);
-  }, []);
+    PqnGetAllSinhVien();
+    console.log("Day la State Data:", PqnListSinhVien);
+  }, []); // Empty dependency array to run the effect only once
 
   const [pqnAddOrEdit, setPqnAddOrEdit] = useState(false);
-  const pqnInitSinhVien = {
+  const PqnInitSinhVien = {
     PqnHoSV: "Phạm",
     PqnTenSV: "Nhất",
     PqnPhai: "Nam",
     PqnNgaySinh: 21052004,
-    PqnNoiSinh: "Hà Nội",
+    PqnNoiSinh: "Ha Noi",
     PqnMaKH: "1",
     PqnHocBong: "Yeah",
-    PqnDiemTrungBinh: 100,
+    PqnDiemTrungBinh: "100",
     PqnMaSV: "2210900115"
-  };
-  const [pqnSinhVien, setPqnSinhVien] = useState(pqnInitSinhVien);
+  }
 
-  // Hàm xử lý nút thêm mới
-  const pqnHandleAddNew = () => {
+  const [PqnSinhVien, setPqnSinhVien] = useState(PqnInitSinhVien);
+  //Ham xu ly them moi
+  const PqnHandleAddNew = () => {
     setPqnAddOrEdit(true);
-  };
-  const pqnHandleClose = (param) => {
+  }
+
+  const PqnHandleClose = (param) => {
     setPqnAddOrEdit(param);
+  }
+  const PqnHandleSubmit = async (param) => {
+    // Handle the submission logic here
+    // For example, you can make an API call to update or create a new sinhvien
+    console.log("Submitted data:", param);
+  
+    try {
+      // Make an API call to update or create a new sinhvien
+      await axios.post("PqnSinhVien", param);
+  
+      // After handling the submission, fetch the updated data
+      await PqnGetAllSinhVien();
+      setPqnAddOrEdit(false); // Close the form after submission
+    } catch (error) {
+      console.error("Error submitting data:", error);
+    }
+  }
+  
+  const PqnHandleDelete = () => {
+    PqnGetAllSinhVien();
   };
-  const pqnHandleSubmit = (param) => {
-    pqnGetAllSinhViens();
-    setPqnAddOrEdit(param);
-  };
-  const pqnHandleDelete = () => {
-    pqnGetAllSinhViens();
-  };
-  let pqnElementForm =
-    pqnAddOrEdit === true ? (
-      <PqnSinhVienAddOrEdit
-        renderSinhViens={pqnSinhVien}
-        onPqnClose={pqnHandleClose}
-        onPqnSubmitForm={pqnHandleSubmit}
-      />
-    ) : (
-      ""
-    );
-  return (
-    <div className="container border my-3">
-      <h1>Bài Kiểm Tra</h1>
-      <hr />
-      <PqnSinhVienList
-        renderPqnSinhVienList={pqnSinhVienList}
-        onPqnDelete={pqnHandleDelete}
-      />
-      <button
-        className="btn btn-primary"
-        name="btnPqnThemMoi"
-        onClick={pqnHandleAddNew}
-      >
-        Thêm mới
-      </button>
-      <hr />
-      {pqnElementForm}
-    </div>
+  let PqnElementForm = pqnAddOrEdit === true ? (
+    <PqnSinhVienAddOrEdit
+      renderSinhVien={PqnSinhVien}
+      onPqnClose={PqnHandleClose}
+      onPqnSubmitForm={PqnHandleSubmit}
+      
+    />
+  ) : (
+    ""
   );
+  
+  return (
+    <div className='container border my-3'>
+      <h1>Lam viec voi API</h1>
+      <hr />
+      <PqnSinhVienList renderPqnListSinhVien={PqnListSinhVien} onPqnDelete={PqnHandleDelete} onPqnEdit={PqnHandleEdit} />
+      <button className='btn btn-primary' onClick={PqnHandleAddNew}>Them moi</button>
+      <hr />
+      {PqnElementForm}
+    </div>
+  )
 }
 
 export default PqnApp;
